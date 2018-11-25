@@ -1,0 +1,7 @@
+$(SHLIB): hello.o
+
+hello.o:
+	nvcc -c hello.cu -Xcompiler -fPIC -Xcompiler -O3
+# -Xcompiler -std=c++11
+
+PKG_LIBS = hello.o -L/opt/cuda/lib64 -lcuda -lcudart
