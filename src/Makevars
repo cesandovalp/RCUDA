@@ -1,7 +1,11 @@
-$(SHLIB): hello.o
+$(SHLIB): hello.o MatrixOperations.o
 
 hello.o:
-	nvcc -c hello.cu -Xcompiler -fPIC -Xcompiler -O3
-# -Xcompiler -std=c++11
+#	nvcc -c hello.cu -Xcompiler -fPIC -Xcompiler -O3
+	nvcc -I. -rdc=true -c hello.cu -Xcompiler -fPIC -Xcompiler -O3
 
-PKG_LIBS = hello.o -L/opt/cuda/lib64 -lcuda -lcudart
+MatrixOperations.o:
+	nvcc -I. -rdc=true -c MatrixOperations.cu -Xcompiler -fPIC -Xcompiler -O3
+	nvcc -dlink -Xcompiler -fPIC -o cuda_link.o MatrixOperations.o hello.o
+
+PKG_LIBS = hello.o MatrixOperations.o cuda_link.o -L/opt/cuda/lib64 -lcuda -lcudart

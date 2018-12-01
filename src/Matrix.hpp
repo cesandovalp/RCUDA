@@ -9,7 +9,6 @@ namespace spann
   class Matrix
   {
     public:
-
       int rows, columns;
       domain* data = 0;
       domain* tmp  = 0;
@@ -20,11 +19,6 @@ namespace spann
       {
         delete[] data;
         delete[] tmp;
-      }
-
-      Matrix( int rows, int columns, domain value = 0 )
-      {
-        SetSize( rows, columns, value );
       }
 
       void SetSize( int rows, int columns, domain value = 0 )
@@ -42,12 +36,24 @@ namespace spann
         }
       }
 
+      Matrix( int rows, int columns ) : rows(rows), columns(columns)
+      {
+        data = new domain[rows * columns];
+        tmp  = new domain[rows * columns];
+
+        for( int i = 0; i < rows * columns; ++i )
+        {
+          data[i] = 0;
+          tmp[i] = 0;
+        }
+      }
+
       Matrix( const Matrix<domain>& other )
       {
         data = new domain[other.rows * other.columns];
         tmp  = new domain[other.rows * other.columns];
-        std::copy( other.data, other.data + (other.rows * other.columns), data );
-        std::copy( other.tmp , other.tmp  + (other.rows * other.columns), tmp );
+        std::copy( other.data, other.data + ( other.rows * other.columns ), data );
+        std::copy( other.tmp , other.tmp  + ( other.rows * other.columns ), tmp );
 
         rows    = other.rows;
         columns = other.columns;
@@ -74,13 +80,13 @@ namespace spann
         }
       }
 
-      domain* operator[]( int row ) const { return data + (row * columns); }
+      domain* operator[]( int row ) const { return data + ( row * columns ); }
       domain* operator()( int index ) const { return data + index; }
 
       Matrix<domain>& operator+=( const Matrix<domain>& b )
       {
         for( int i = 0; i < rows * columns; ++i )
-          data[i] += *b(i);
+          data[i] += *b( i );
         return *this;
       }
 
@@ -137,7 +143,7 @@ namespace spann
         for( int i = 0; i < rows; ++i )
           for( int j = 0; j < b.columns; ++j )
             for( int k = 0; k < columns; ++k )
-              result[i][j] += (data + (i * columns))[k] * b[k][j];
+              result[i][j] += ( data + ( i * columns ) )[k] * b[k][j];
 
         return result;
       }
@@ -149,7 +155,7 @@ namespace spann
         for( int i = 0; i < rows; ++i )
           for( int j = 0; j < b.size(); ++j )
             for( int k = 0; k < columns; ++k )
-              result[i][j] += (data + (i * columns))[k] * b[j];
+              result[i][j] += ( data + ( i * columns ) )[k] * b[j];
 
         return result;
       }
@@ -160,7 +166,7 @@ namespace spann
 
         for( int i = 0; i < rows; ++i )
             for( int j = 0; j < columns; ++j )
-              result[i][j] += (data + (i * columns))[j] * a;
+              result[i][j] += ( data + ( i * columns ) )[j] * a;
 
         return result;
       }
@@ -169,21 +175,21 @@ namespace spann
       void Multiplication( const Matrix<domain>& b )
       {
         domain* swap;
-        for(int i = 0; i < rows; ++i)
-          for(int j = 0; j < b.columns; ++j)
-            for(int k = 0; k < columns; ++k)
+        for( int i = 0; i < rows; ++i )
+          for( int j = 0; j < b.columns; ++j )
+            for( int k = 0; k < columns; ++k )
               tmp[i * columns + j] += data[i * columns + k] * b[k][j];
         swap = data;
         data = tmp;
         tmp  = swap;
-        for(int i = 0; i < rows * columns; ++i)
+        for( int i = 0; i < rows * columns; ++i )
           tmp[i] = 0;
       }
 
       void HadamardProduct( const Matrix<domain>& b )
       {
         for( int i = 0; i < rows * columns; ++i )
-          data[i] *= *b(i);
+          data[i] *= *b( i );
       }
 
       void Multiplication( const Matrix<domain>& a, const Matrix<domain>& b )
@@ -198,7 +204,7 @@ namespace spann
       {
         Matrix<domain> result( rows, columns );
         for( int i = 0; i < rows * columns; ++i )
-          *result(i) = -data[i];
+          *result( i ) = -data[i];
         return result;
       }
 
@@ -207,7 +213,7 @@ namespace spann
         Matrix<domain> result( columns, rows );
         for( int i = 0; i < columns; ++i )
           for( int j = 0; j < rows; ++j )
-            result[i][j] = (data + (j * columns))[i];
+            result[i][j] = ( data + ( j * columns ) )[i];
         return result;
       }
 
@@ -218,8 +224,8 @@ namespace spann
 
         data = new domain[other.rows * other.columns];
         tmp  = new domain[other.rows * other.columns];
-        std::copy( other.data, other.data + (other.rows * other.columns), data );
-        std::copy( other.tmp , other.tmp  + (other.rows * other.columns), tmp );
+        std::copy( other.data, other.data + ( other.rows * other.columns ), data );
+        std::copy( other.tmp , other.tmp  + ( other.rows * other.columns ), tmp );
 
         rows    = other.rows;
         columns = other.columns;
@@ -229,7 +235,7 @@ namespace spann
 
       Matrix<domain>& operator=( const domain& other )
       {
-        for(int i = 0; i < rows * columns; ++i)
+        for( int i = 0; i < rows * columns; ++i )
           data[i] = other;
 
         return *this;
@@ -240,7 +246,16 @@ namespace spann
         columns = m.size();
         rows    = 1;
 
-        for(int i = 0; i < m.size(); ++i)
+        for( int i = 0; i < m.size(); ++i )
+        {
+          data[i] = m[i];
+          tmp[i] = 0;
+        }
+      }
+
+      void Copy( domain* m )
+      {
+        for( int i = 0; i < rows*columns; ++i )
         {
           data[i] = m[i];
           tmp[i] = 0;
@@ -258,7 +273,7 @@ namespace spann
 
       void operator()( const Matrix<domain>& other )
       {
-        std::copy( other.data, other.data + (other.rows * other.columns), data );
+        std::copy( other.data, other.data + ( other.rows * other.columns ), data );
       }
 
       Matrix<domain>& operator()( domain (*f)( domain ) )
@@ -304,7 +319,7 @@ namespace spann
         return result;
       }
 
-      friend std::ostream& operator<< (std::ostream& stream, const Matrix<domain>& m)
+      friend std::ostream& operator<< ( std::ostream& stream, const Matrix<domain>& m )
       {
         for( int j = 0; j < m.rows; ++j )
         {
